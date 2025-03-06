@@ -4,6 +4,7 @@ import './App.css'
 import PatientDashboardPage from './Patient/DashBoard'
 import { BrowserRouter } from 'react-router-dom'
 import BookAppointment from './Patient/Appointment'
+import UploadReport from './Patient/UploadReport'
 function App() {
 
 
@@ -13,7 +14,7 @@ function App() {
       {/* <DashBoard/>       */}
       <PatientDashboardPage/>
       <BookAppointment/>
-      
+      <UploadReport/>
    </div>
     </BrowserRouter>
   
