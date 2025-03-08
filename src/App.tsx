@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import BookAppointment from './Patient/Appointment'
 import UploadReport from './Patient/UploadReport'
 import DoctorAppointments from './Doctor/Appoitnment'
+import PatientListView from './Doctor/PatientView'
 function App() {
 
 
@@ -17,6 +18,7 @@ function App() {
       <BookAppointment/>
       <UploadReport/>
       <DoctorAppointments/>
+      <PatientListView/>
    </div>
     </BrowserRouter>
   
