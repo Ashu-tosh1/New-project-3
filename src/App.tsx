@@ -7,6 +7,7 @@ import BookAppointment from './Patient/Appointment'
 import UploadReport from './Patient/UploadReport'
 import DoctorAppointments from './Doctor/Appoitnment'
 import PatientListView from './Doctor/PatientView'
+import DoctorProfile from './Doctor/Profile'
 function App() {
 
 
@@ -19,6 +20,7 @@ function App() {
       <UploadReport/>
       <DoctorAppointments/>
       <PatientListView/>
+      <DoctorProfile/>
    </div>
     </BrowserRouter>
   
