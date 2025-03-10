@@ -8,6 +8,7 @@ import UploadReport from './Patient/UploadReport'
 import DoctorAppointments from './Doctor/Appoitnment'
 import PatientListView from './Doctor/PatientView'
 import DoctorProfile from './Doctor/Profile'
+import AppointmentStatusChecklist from './Patient/AppoitmentStatus'
 function App() {
 
 
@@ -21,9 +22,11 @@ function App() {
       <DoctorAppointments/>
       <PatientListView/>
       <DoctorProfile/>
+      <AppointmentStatusChecklist/>
    </div>
     </BrowserRouter>
   
 )}
 
 export default App
+
