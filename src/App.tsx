@@ -9,6 +9,7 @@ import DoctorAppointments from './Doctor/Appoitnment'
 import PatientListView from './Doctor/PatientView'
 import DoctorProfile from './Doctor/Profile'
 import AppointmentStatusChecklist from './Patient/AppoitmentStatus'
+import DoctorProfilePage from './Patient/DoctorProfile'
 function App() {
 
 
@@ -23,6 +24,7 @@ function App() {
       <PatientListView/>
       <DoctorProfile/>
       <AppointmentStatusChecklist/>
+      <DoctorProfilePage/>
    </div>
     </BrowserRouter>
   
