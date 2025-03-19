@@ -11,6 +11,7 @@ const BookAppointment: React.FC = () => {
     reason: "",
   });
 
+  const paitent = ["ashutosh", "asjijasjij"]
   const doctors = ["Dr. John Doe", "Dr. Jane Smith", "Dr. Alice Brown"];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -27,6 +28,7 @@ const BookAppointment: React.FC = () => {
     <div className="flex h-screen bg-gray-900 text-white">
       <PatientSidebar />
       <div className="flex-1 flex justify-center items-center">
+        <div>{paitent}</div>
         <div className="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-3xl font-bold mb-6 text-center">Book an Appointment</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
