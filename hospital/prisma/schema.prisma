@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum medicineType{
+  TABLET
+  CAPSULE
+  INJECTION
+  OINTMENT
+  SUPPOSITORY
+  INHALER
+
+}
+
+model Patient {
+  id String @id 
+  name String 
+  email String? @unique // question marks means it is optional
+  // password String
+  phone String 
+  address String
+  city String
+  state String
+  zip String
+  country String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sex String
+  dob DateTime
+  bloodGroup String
+  weight Int
+  height Int
+  bloodPressure String
+  isActive Boolean @default(true)
+  doctor Doctor[] // one to many relation
+  appointment Appointment[] // one to many relation
+  medicine Medicine[] // one to many relation
+  report report[] // one to many relation
+  labTest labTest[] // one to many relation
+}
+
+
+model Doctor {
+  id String @id
+  // password String
+  name String
+  email String @unique
+  
+  Patient Patient[]
+  appointment Appointment[] // one to many relation
+  report report[] // one to many relation
+  medicine Medicine[] // one to many relation
+  labTest labTest[] // one to many relation
+}
+
+model Appointment {
+  id String @id
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  appointmentDate DateTime
+  appointmentTime DateTime
+  appointmentStatus String
+  appointmentType String
+  appointmentDescription String
+  appointmentNotes String
+  createdAt DateTime @default(now()) 
+}
+
+model Medicine {
+  id String @id
+  name String
+  price Int
+  quantity Int
+  description String
+  medicineType String
+  patientId String
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId], references: [id])
+  patient Patient @relation(fields: [patientId], references: [id])
+  createdAt DateTime @default(now()) 
+}
+
+model report{
+  id String @id
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId],references: [id])
+  createdAt DateTime @default(now()) 
+}
+
+model labTest{
+  id String @id
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor Doctor @relation(fields: [doctorId],references: [id])
+  createdAt DateTime @default(now()) 
+}
