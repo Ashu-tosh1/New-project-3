@@ -12,100 +12,148 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-enum medicineType{
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+  LAB_ASSISTANT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum medicineType {
   TABLET
   CAPSULE
   INJECTION
   OINTMENT
   SUPPOSITORY
   INHALER
+}
 
+model User {
+  id        String @id
+  name      String
+  email     String @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  patient    Patient?
+  doctor     Doctor?
+  labAssistant LabAssistant?
 }
 
 model Patient {
-  id String @id 
-  name String 
-  email String? @unique // question marks means it is optional
-  // password String
-  phone String 
-  address String
-  city String
-  state String
-  zip String
-  country String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sex String
-  dob DateTime
-  bloodGroup String
-  weight Int
-  height Int
+  id           String @id
+  userId       String? @unique
+  user         User? @relation(fields: [userId], references: [id])
+  phone        String
+  address      String
+  city         String
+  state        String
+  zip          String
+  country      String
+  sex          String
+  dob          DateTime
+  bloodGroup   String
+  weight       Int
+  height       Int
   bloodPressure String
-  isActive Boolean @default(true)
-  doctor Doctor[] // one to many relation
-  appointment Appointment[] // one to many relation
-  medicine Medicine[] // one to many relation
-  report report[] // one to many relation
-  labTest labTest[] // one to many relation
+  isActive     Boolean @default(true)
+  appointments Appointment[]
+  medicines    Medicine[]
+  reports      Report[]
+  labTests     LabTest[]
+  chats        Chat[]
 }
 
-
 model Doctor {
-  id String @id
-  // password String
-  name String
-  email String @unique
-  
-  Patient Patient[]
-  appointment Appointment[] // one to many relation
-  report report[] // one to many relation
-  medicine Medicine[] // one to many relation
-  labTest labTest[] // one to many relation
+  id           String @id
+  userId       String? @unique
+  user         User? @relation(fields: [userId], references: [id])
+  department   String?
+  availableSlots String[] // Array of available time slots
+  bookedSlots  String[]   // Array of booked time slots
+  appointments Appointment[]
+  reports      Report[]
+  medicines    Medicine[]
+  labTests     LabTest[]
+  chats        Chat[]
 }
 
 model Appointment {
-  id String @id
-  patientId String
-  patient Patient @relation(fields: [patientId], references: [id])
-  doctorId String
-  doctor Doctor @relation(fields: [doctorId], references: [id])
-  appointmentDate DateTime
-  appointmentTime DateTime
-  appointmentStatus String
-  appointmentType String
-  appointmentDescription String
-  appointmentNotes String
-  createdAt DateTime @default(now()) 
+  id                 String @id
+  patientId          String
+  patient            Patient @relation(fields: [patientId], references: [id])
+  doctorId           String
+  doctor            Doctor @relation(fields: [doctorId], references: [id])
+  appointmentDate    DateTime
+  appointmentTime    DateTime
+  status             AppointmentStatus @default(PENDING)
+  type               String?
+  description        String?
+  notes             String?
+  paymentStatus      String @default("PENDING")
+  createdAt         DateTime @default(now())
 }
 
 model Medicine {
-  id String @id
-  name String
-  price Int
-  quantity Int
-  description String
-  medicineType String
-  patientId String
-  doctorId String
-  doctor Doctor @relation(fields: [doctorId], references: [id])
-  patient Patient @relation(fields: [patientId], references: [id])
-  createdAt DateTime @default(now()) 
+  id           String @id
+  name         String
+  price        Int
+  quantity     Int
+  description  String
+  medicineType medicineType
+  patientId    String
+  doctorId     String
+  doctor       Doctor @relation(fields: [doctorId], references: [id])
+  patient      Patient @relation(fields: [patientId], references: [id])
+  orderStatus  String @default("PENDING")
+  createdAt    DateTime @default(now())
 }
 
-model report{
-  id String @id
+model Report {
+  id        String @id
   patientId String
-  patient Patient @relation(fields: [patientId], references: [id])
-  doctorId String
-  doctor Doctor @relation(fields: [doctorId],references: [id])
-  createdAt DateTime @default(now()) 
+  patient   Patient @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
+  details   String
+  createdAt DateTime @default(now())
 }
 
-model labTest{
-  id String @id
+model LabTest {
+  id        String @id
   patientId String
-  patient Patient @relation(fields: [patientId], references: [id])
-  doctorId String
-  doctor Doctor @relation(fields: [doctorId],references: [id])
-  createdAt DateTime @default(now()) 
+  patient   Patient @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
+  labAssistantId String?
+  labAssistant LabAssistant? @relation(fields: [labAssistantId], references: [id])
+  testDetails String
+  status     String @default("PENDING")
+  createdAt DateTime @default(now())
+}
+
+model LabAssistant {
+  id       String @id
+  userId   String @unique
+  user     User @relation(fields: [userId], references: [id])
+  labTests LabTest[]
+}
+
+model Chat {
+  id        String @id
+  doctorId  String?
+  doctor    Doctor? @relation(fields: [doctorId], references: [id])
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  message   String
+  createdAt DateTime @default(now())
 }

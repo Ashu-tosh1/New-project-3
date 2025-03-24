@@ -1,11 +1,12 @@
 "use client"
+import Image from "next/image";
 // import prisma from "@/app/lib/prisma";
-import React, { useState } from "react";
+import React from "react";
 
 interface Doctor {
     id: string;
     name: string;
-    time: string;
+    // department: string;
   }
   
   interface DoctorlistProps {
@@ -13,96 +14,51 @@ interface Doctor {
   }  
   
   const Doctorlist: React.FC<DoctorlistProps> = ({ doctors }) => {
-    const [appointment, setAppointment] = useState({
-      doctor: "",
-      date: "",
-      time: "",
-      reason: "",
-    });
+   
       console.log(doctors)
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setAppointment({ ...appointment, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Appointment Booked:", appointment);
-    alert("Appointment booked successfully!");
-  };
+    
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
-      {/* <PatientSidebar /> */}
-      <div className="flex-1 flex justify-center items-center">
-        {/* <div>{paitent}</div> */}
-        <div className="w-full max-w-lg bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold mb-6 text-center">Book an Appointment</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-gray-300">Select Doctor</label>
-              <select
-                name="doctor"
-                value={appointment.doctor}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white"
-                required
-              >
-                {/* <option value="">Choose a doctor</option>
-                {doctors.map((doc, index) => (
-                  <option key={index} value={doc}>{doc}</option> */}
-                {/* ))} */}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-300">Select Date</label>
-              <input
-                type="date"
-                name="date"
-                value={appointment.date}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300">Select Time</label>
-              <input
-                type="time"
-                name="time"
-                value={appointment.time}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-300">Reason for Visit</label>
-              <textarea
-                name="reason"
-                value={appointment.reason}
-                onChange={handleChange}
-                className="w-full p-2 border rounded-lg bg-gray-700 text-white"
-                rows={3}
-                placeholder="Describe your symptoms or reason for visit"
-                required
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-            >
-              Book Appointment
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+    <div className="min-h-screen bg-gradient-to-br from-blue-200 to-blue-400 flex items-center justify-center p-6">
+   
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {doctors.map((doctor) => (
+              <Doctorcard key={doctor.id} doctor={doctor} />
+            ))}
+          </div>       
+   
+  </div>
+);
 };
 
 export default Doctorlist;
+
+
+
+export const Doctorcard = ({doctor}: {doctor: Doctor}) => {
+   
+    const { name } = doctor;
+    return (
+        <div>
+             <div className="bg-gradient-to-r from-blue-900 to-gray-900 text-white p-4 rounded-2xl shadow-lg w-80">
+      <Image
+        src="/Doctor.png"
+        alt="Doctor Image"
+        width={90}
+        height={90}
+        className=" mx-auto"
+      />
+      
+        <h2 className="text-xl font-semibold text-center mt-2">{name}</h2>
+                <p className="text-center text-gray-400">{ doctor.department}</p>
+      <div className="mt-3">
+        <p className="text-sm mx-[60px]">  Mon - Fri, 9 AM - 5 PM</p>
+       
+      </div>
+      <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
+        Book Appointment
+      </button>
+    </div>
+        </div>
+    )
+}

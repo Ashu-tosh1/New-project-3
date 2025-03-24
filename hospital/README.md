@@ -26,3 +26,15 @@ this will generate the prisma client
 
 after all this write the code for seed.ts and then run the command
 >npx prisma db seed
+
+for updating the data
+1.Modify schema.prisma
+2️.Run npx prisma migrate dev --name <migration-name>
+3️.Run npx prisma generate
+4️Update seed.ts and run npx prisma db seed
+5. Manually update existing data using Prisma Studio or updateMany()
+6️.Use the new column in your queries
+
+to reset
+>npx prisma migrate reset
+

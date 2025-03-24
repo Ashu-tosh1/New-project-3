@@ -1,9 +1,13 @@
 import React from 'react'
+import Navbar from '../components/common/Navbar'
+
 
 const layout = async ({children}:{children:React.ReactNode}) => {
   return (
     <div>
-       My root  layout
+      <Navbar/>
+      
+    
         {children}              
     </div>
   )
