@@ -1,64 +1,97 @@
-"use client"
-import Image from "next/image";
-// import prisma from "@/app/lib/prisma";
+
 import React from "react";
 
-interface Doctor {
-    id: string;
-    name: string;
-    // department: string;
-  }
-  
-  interface DoctorlistProps {
-    doctors: Doctor[];
-  }  
-  
-  const Doctorlist: React.FC<DoctorlistProps> = ({ doctors }) => {
-   
-      console.log(doctors)
-    
+const doctors = [
+  { id: 1, name: "Dr. John Doe", specialty: "Cardiologist", experience: "10 years", image: "/Doctor1.png", availability: [4, 7, 11, 14, 18, 22] },
+  { id: 2, name: "Dr. Jane Smith", specialty: "Endocrinologist", experience: "8 years", image: "/doctor2.jpg", availability: [2, 5, 9, 12, 16, 20] },
+  { id: 3, name: "Dr. Alice Brown", specialty: "Pulmonologist", experience: "12 years", image: "/doctor3.jpg", availability: [3, 6, 10, 15, 19, 25] },
+];
+
+const PatientHomePage = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [hoveredDoctor, setHoveredDoctor] = useState(null);
+
+  const filteredDoctors = doctors.filter(
+    (doctor) =>
+      doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.specialty.toLowerCase().includes(selectedSpecialty.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-200 to-blue-400 flex items-center justify-center p-6">
-   
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {doctors.map((doctor) => (
-              <Doctorcard key={doctor.id} doctor={doctor} />
-            ))}
-          </div>       
-   
-  </div>
-);
+    <div className="min-h-screen bg-green-100 text-gray-900 p-6">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-5xl font-extrabold text-center mb-8 text-green-700">Find Your Specialist</h1>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+          <input
+            type="text"
+            placeholder="Search by doctor name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-1/3 p-3 rounded-lg bg-white border border-green-300 text-gray-900 placeholder-gray-500 shadow-sm"
+          />
+          <select
+            value={selectedSpecialty}
+            onChange={(e) => setSelectedSpecialty(e.target.value)}
+            className="w-full sm:w-1/4 p-3 rounded-lg bg-white border border-green-300 text-gray-900 shadow-sm"
+          >
+            <option value="">Filter by Specialty</option>
+            <option value="Cardiologist">Cardiologist</option>
+            <option value="Endocrinologist">Endocrinologist</option>
+            <option value="Pulmonologist">Pulmonologist</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredDoctors.length > 0 ? (
+            filteredDoctors.map((doctor) => (
+              <div
+                key={doctor.id}
+                className="relative bg-white p-4 rounded-lg shadow-md flex flex-col items-center text-center transition duration-300 hover:shadow-xl"
+                onMouseEnter={() => setHoveredDoctor(doctor.id)}
+                onMouseLeave={() => setHoveredDoctor(null)}
+              >
+                {/* Doctor Image with Fallback */}
+                <img
+                  src={doctor.image}
+                  onError={(e) => (e.target.src = "/fallback.png")}
+                  alt={doctor.name}
+                  className="w-24 h-24 rounded-full mb-3 border border-gray-300"
+                />
+
+                {/* Minimalist Doctor Info */}
+                <h2 className="text-xl font-semibold text-gray-800">{doctor.name}</h2>
+                <p className="text-sm text-gray-600">{doctor.specialty}</p>
+                <p className="text-sm text-gray-500">{doctor.experience} Experience</p>
+
+                {/* Availability Calendar (Appears on Hover) */}
+                {hoveredDoctor === doctor.id && (
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-52 bg-white border border-gray-300 rounded-md shadow-lg p-3 text-sm">
+                    <p className="font-semibold text-center mb-2">Availability This Month:</p>
+                    <div className="grid grid-cols-7 gap-1 text-xs text-gray-700">
+                      {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => (
+                        <div
+                          key={day}
+                          className={`w-6 h-6 flex items-center justify-center rounded ${
+                            doctor.availability.includes(day) ? "bg-green-500 text-white font-bold" : "bg-gray-100"
+                          }`}
+                        >
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-lg text-green-700 font-semibold">No doctors found. Try another search.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default Doctorlist;
-
-
-
-export const Doctorcard = ({doctor}: {doctor: Doctor}) => {
-   
-    const { name } = doctor;
-    return (
-        <div>
-             <div className="bg-gradient-to-r from-blue-900 to-gray-900 text-white p-4 rounded-2xl shadow-lg w-80">
-      <Image
-        src="/Doctor.png"
-        alt="Doctor Image"
-        width={90}
-        height={90}
-        className=" mx-auto"
-      />
-      
-        <h2 className="text-xl font-semibold text-center mt-2">{name}</h2>
-                <p className="text-center text-gray-400">{ doctor.department}</p>
-      <div className="mt-3">
-        <p className="text-sm mx-[60px]">  Mon - Fri, 9 AM - 5 PM</p>
-       
-      </div>
-      <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
-        Book Appointment
-      </button>
-    </div>
-        </div>
-    )
-}
+export default PatientHomePage;

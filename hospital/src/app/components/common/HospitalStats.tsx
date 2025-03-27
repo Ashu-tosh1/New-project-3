@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
+
+
 const stats = [
   { id: 1, label: "Doctors", value: "500+", desc: "Experienced Medical Professionals" },
   { id: 2, label: "Reports Processed", value: "20,000+", desc: "Accurate and Fast Diagnoses" },
