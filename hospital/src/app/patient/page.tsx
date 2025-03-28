@@ -1,21 +1,21 @@
 "use server";
 import React from "react";
-import Doctorlist from "../components/patient/Doctorlist";
-import prisma from "../lib/prisma";
+// import Doctorlist from "../components/patient/Doctorlist";
+// import prisma from "../lib/prisma";
 
 const page = async () => {
-  const doctors = await prisma.user.findMany({
-    where: {
-      role: "DOCTOR",
-    },
+//   const doctors = await prisma.user.findMany({
+//     where: {
+//       role: "DOCTOR",
+//     },
    
-  });
-  console.log(doctors);
+//   });
+//   console.log(doctors);
 
   return (
     <div>
-      {/* this is patient page */}
-      <Doctorlist doctors={doctors} />
+      this is patient page
+      {/* <Doctorlist doctors={doctors} /> */}
     </div>
   );
 };
