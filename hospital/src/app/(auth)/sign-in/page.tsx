@@ -1,9 +1,10 @@
+import AuthPage from '@/components/login/Authpage'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      This is sign in page
+      <AuthPage/>
     </div>
   )
 }
