@@ -1,10 +1,11 @@
-import AuthPage from '@/components/login/Authpage'
+import LoginPage from '@/components/login/Loginpage'
+// import { SignIn } from '@clerk/nextjs'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <AuthPage/>
+     <LoginPage/>
     </div>
   )
 }

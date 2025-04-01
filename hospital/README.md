@@ -38,3 +38,8 @@ for updating the data
 to reset
 >npx prisma migrate reset
 
+
+now we will be using the api to implement the register and login functionality
+we will be setting up clerk and then create a api inside the api folder for that
+now we will be using ReactQuery to implement the api in the frontend of the login application
+

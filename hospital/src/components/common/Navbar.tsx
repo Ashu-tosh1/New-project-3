@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 // import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SignOutButton } from "@clerk/nextjs";
 
 interface User {
   name: string;
@@ -55,6 +56,15 @@ const Navbar = () => {
               My Appointments
             </Link>
           )}
+  (
+    <SignOutButton redirectUrl="/sign-in">
+      <button className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg">
+        Logout
+      </button>
+    </SignOutButton>
+  );
+
+
         </div>
 
         {/* Logo */}

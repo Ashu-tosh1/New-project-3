@@ -37,7 +37,8 @@ enum medicineType {
 }
 
 model User {
-  id        String @id
+  id        String @id @default(cuid()) 
+  clerkId   String @unique
   name      String
   email     String @unique
   password  String
@@ -50,9 +51,9 @@ model User {
 }
 
 model Patient {
-  id           String @id
-  userId       String? @unique
-  user         User? @relation(fields: [userId], references: [id])
+  id           String @id @default(cuid()) 
+  userId       String @unique @map("user_id")
+  user         User   @relation(fields: [userId], references: [id])
   phone        String
   address      String
   city         String
@@ -71,21 +72,34 @@ model Patient {
   reports      Report[]
   labTests     LabTest[]
   chats        Chat[]
+  doctorPatients PatientDoctor[] // ✅ Many-to-many relation
 }
 
 model Doctor {
-  id           String @id
-  userId       String? @unique
-  user         User? @relation(fields: [userId], references: [id])
+  id           String @id @default(cuid())
+  userId       String @unique @map("user_id")
+  user         User   @relation(fields: [userId], references: [id])
   department   String?
-  availableSlots String[] // Array of available time slots
-  bookedSlots  String[]   // Array of booked time slots
+  availableSlots Json  
+  bookedSlots  Json    
   appointments Appointment[]
   reports      Report[]
   medicines    Medicine[]
   labTests     LabTest[]
   chats        Chat[]
+  patientDoctors PatientDoctor[] 
 }
+
+
+model PatientDoctor {
+  doctorId  String
+  patientId String
+  doctor    Doctor @relation(fields: [doctorId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id])
+  @@id([doctorId, patientId]) // Composite Primary Key
+}
+
+
 
 model Appointment {
   id                 String @id
