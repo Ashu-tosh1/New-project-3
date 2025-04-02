@@ -1,56 +1,48 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import {
-  FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt,
-  FaVenusMars,
-  FaHeartbeat,
-  FaWeight,
-  FaTint,
-} from "react-icons/fa";
 import { useUser } from "@clerk/nextjs";
-import { Clerk } from "@clerk/clerk-sdk-node";
-// import { User } from "@prisma/client";
-import { getToken } from "@clerk/nextjs";
-    
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaVenusMars, FaHeartbeat, FaWeight, FaTint } from "react-icons/fa";
+import Image from "next/image";
+
 const PatientProfile: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [patientData, setPatientData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-      const fetchPatientData = async () => {
-        console.log(user)
-      try {
-        const token = await getToken(); // Get Clerk session token
-        if (!token) {
-          console.error("No token found. User might be logged out.");
-          return;
+    const fetchPatientData = async () => {
+      if (isLoaded && user) {
+        try {
+          const clerkId = user.id; // Use the Clerk user ID to fetch patient data
+
+          if (!clerkId) {
+            console.error("No Clerk user ID found.");
+            return;
+          }
+
+          // Fetch patient profile data based on clerkId
+          const res = await fetch(`/api/patient-profile?clerkId=${clerkId}`, {
+            method: "GET",
+          });
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch patient profile");
+          }
+
+          const data = await res.json();
+          setPatientData(data);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching patient data:", error);
+          setLoading(false);
         }
-
-        const res = await fetch("/api/patient-profile", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch patient profile");
-        }
-
-        const data = await res.json();
-        setPatientData(data);
-      } catch (error) {
-        console.error("Error fetching patient data:", error);
       }
     };
 
     fetchPatientData();
-  }, []);
+  }, [isLoaded, user]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
@@ -86,26 +78,19 @@ const PatientProfile: React.FC = () => {
               <FaPhone className="text-blue-600 mr-3" /> {patientData.phone || "N/A"}
             </div>
             <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaMapMarkerAlt className="text-blue-600 mr-3" /> {patientData.address || "N/A"}
+              <FaMapMarkerAlt className="text-blue-600 mr-3" /> {patientData.address}
             </div>
             <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaVenusMars className="text-blue-600 mr-3" /> {patientData.gender}
-            </div>
-          </div>
-
-          <h3 className="text-2xl font-semibold text-blue-900 mt-6 mb-4">Health Stats</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaTint className="text-red-600 mr-3" /> Blood Group: {patientData.bloodGroup || "N/A"}
+              <FaVenusMars className="text-blue-600 mr-3" /> {patientData.sex}
             </div>
             <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaHeartbeat className="text-red-600 mr-3" /> Heart Rate: {patientData.heartRate || "N/A"} bpm
+              <FaHeartbeat className="text-blue-600 mr-3" /> {patientData.bloodPressure}
             </div>
             <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaHeartbeat className="text-red-600 mr-3" /> Blood Pressure: {patientData.bloodPressure || "N/A"}
+              <FaWeight className="text-blue-600 mr-3" /> {patientData.weight} kg
             </div>
             <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaWeight className="text-red-600 mr-3" /> Weight: {patientData.weight || "N/A"} kg
+              <FaTint className="text-blue-600 mr-3" /> {patientData.bloodGroup}
             </div>
           </div>
         </div>
