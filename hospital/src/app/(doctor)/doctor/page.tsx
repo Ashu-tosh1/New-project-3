@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from "react";
 import {
   Calendar,
-  FileUp,
   FileText,
   Stethoscope,
   PieChart,
   Pill,
   ChevronRight,
-  Users,
   Search,
   Clock,
   CheckCircle,
@@ -241,7 +239,7 @@ const DoctorDashboard = () => {
           <div>
             <div className="flex items-center mb-3">
               <Calendar size={16} className="text-blue-600 mr-2" />
-              <h2 className="font-medium text-gray-800">Today's Appointments</h2>
+              <h2 className="font-medium text-gray-800">Today&apos;s Appointments</h2>
             </div>
             
             <div className="space-y-2">
