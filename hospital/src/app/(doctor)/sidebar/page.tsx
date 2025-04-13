@@ -24,7 +24,7 @@ const DoctorSidebar = () => {
     { id: 'diagnosis', name: 'Diagnoses', icon: ClipboardCheck },
     { id: 'reports', name: 'Medical Reports', icon: FileText },
     { id: 'messages', name: 'Messages', icon: MessageSquare },
-    { id: 'healthInsights', name: 'Health Insights', icon: HeartPulse }
+    { id: 'healthInsights', name: 'Health Insights', icon: HeartPulse },
     { id: 'documents', name: 'Documents', icon: FolderOpen },
     { id: 'settings', name: 'Settings', icon: Settings },
   ];
