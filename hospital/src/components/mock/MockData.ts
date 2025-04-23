@@ -148,3 +148,63 @@ export const sampleDoctors: Doctor[] = [
     },
   ];
   
+
+// import { Patient } from '../types';
+  
+
+export type Patient = {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  appointmentTime: string;
+  status: "waiting" | "in-progress" | "completed";
+  symptoms?: string;
+  medicalHistory?: string;
+  image?: string;
+};
+
+export const mockPatients: Patient[] = [
+  {
+    id: "P001",
+    name: "John Doe",
+    age: 35,
+    gender: "Male",
+    appointmentTime: "9:00 AM",
+    status: "in-progress",
+    symptoms: "Chest pain, shortness of breath, fatigue lasting for 1 week. Pain intensifies during physical activity.",
+    medicalHistory: "Hypertension diagnosed 3 years ago. No previous cardiac issues. Family history of heart disease."
+  },
+  {
+    id: "P002",
+    name: "Sarah Johnson",
+    age: 42,
+    gender: "Female",
+    appointmentTime: "9:30 AM",
+    status: "waiting",
+    symptoms: "Migraine headaches, sensitivity to light",
+    medicalHistory: "Chronic migraines, allergic to penicillin"
+  },
+  {
+    id: "P003",
+    name: "Robert Chen",
+    age: 58,
+    gender: "Male",
+    appointmentTime: "10:15 AM",
+    status: "waiting",
+    symptoms: "Joint pain in knees and hands",
+    medicalHistory: "Arthritis, type 2 diabetes"
+  },
+  {
+    id: "P004",
+    name: "Emily Wilson",
+    age: 29,
+    gender: "Female",
+    appointmentTime: "11:00 AM",
+    status: "waiting",
+    symptoms: "Persistent cough, fever",
+    medicalHistory: "Asthma"
+  }
+];
+
+  
