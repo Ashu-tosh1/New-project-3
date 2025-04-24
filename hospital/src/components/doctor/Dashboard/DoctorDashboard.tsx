@@ -1,11 +1,11 @@
-"use client"
-
+"use client";
 import React, { useState, useEffect } from "react";
 import CommunicationTools from "./CommunicationTools";
 import ConsultationWorkflow from "./Workflow";
 import PatientInfoDisplay from "./PatientInfo";
 import SidebarNavigation from "./SideBarNavigation";
 import { mockPatients } from "@/components/mock/MockData";
+import DoctorSidebar from "@/app/(doctor)/sidebar/page";
 
 // Type Definitions
 export type Patient = {
@@ -45,9 +45,7 @@ const DoctorDashboard = () => {
     newStatus: Patient["status"]
   ) => {
     setPatients((prev) =>
-      prev.map((p) =>
-        p.id === patientId ? { ...p, status: newStatus } : p
-      )
+      prev.map((p) => (p.id === patientId ? { ...p, status: newStatus } : p))
     );
   };
 
@@ -62,16 +60,23 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar Navigation */}
-      <SidebarNavigation
-        patients={patients}
-        activePatient={activePatient}
-        selectPatient={selectPatient}
-      />
+    <div className="flex min-h-screen bg-blue-100">
+      {/* Main Sidebar */}
+      <aside className="w-64 bg-blue-200  hidden md:flex flex-col justify-between">
+        <DoctorSidebar/>
+      </aside>
+
+      {/* Patient Sidebar */}
+      <aside className="w-64 bg-blue-50 mt-[50px] hidden md:block">
+        <SidebarNavigation
+          patients={patients}
+          activePatient={activePatient}
+          selectPatient={selectPatient}
+        />
+      </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 mt-[50px] flex flex-col">
         {activePatient ? (
           <div className="flex flex-col h-full">
             {/* Patient Info Header */}

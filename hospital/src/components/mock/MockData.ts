@@ -207,4 +207,39 @@ export const mockPatients: Patient[] = [
   }
 ];
 
+
+interface PrescriptionEntry {
+  medicine: string;
+  dosage: string;
+  frequency: string;
+}
+
+interface PrescriptionGroup {
+  id: string;
+  doctor: string;
+  date: string;
+  prescriptions: PrescriptionEntry[];
+}
   
+
+export const samplePrescriptionsGrouped: PrescriptionGroup[] = [
+  {
+    id: "1",
+    doctor: "Dr. Priya Mehra",
+    date: "2025-04-10",
+    prescriptions: [
+      { medicine: "Amoxicillin 500mg", dosage: "1 tablet", frequency: "Twice a day" },
+      { medicine: "Cetirizine 10mg", dosage: "1 tablet", frequency: "Once before bed" },
+      { medicine: "Omeprazole 20mg", dosage: "1 capsule", frequency: "Before breakfast" },
+    ],
+  },
+  {
+    id: "2",
+    doctor: "Dr. Raj Verma",
+    date: "2025-04-05",
+    prescriptions: [
+      { medicine: "Paracetamol 650mg", dosage: "1 tablet", frequency: "Every 6 hours if fever persists" },
+      { medicine: "ORS Solution", dosage: "200 ml", frequency: "After every loose motion" },
+    ],
+  },
+];

@@ -1,10 +1,8 @@
-
-import AppointmentPage from '@/components/patient/Doctorlist'
 import React from 'react'
 
 const page = () => {
   return (
-  <AppointmentPage/>
+    <div>page</div>
   )
 }
 
