@@ -19,7 +19,7 @@ const DoctorSidebar = () => {
 
   const menuItems = [
     { id: 'dashboard', name: 'Dashboard', icon: Stethoscope },
-    { id: 'appointments', name: 'Appointments', icon: Calendar },
+    { id: 'appointments', name: 'Appointments', icon: Calendar },  
     { id: 'patients', name: 'My Patients', icon: User },
     { id: 'diagnosis', name: 'Diagnoses', icon: ClipboardCheck },
     { id: 'reports', name: 'Medical Reports', icon: FileText },
