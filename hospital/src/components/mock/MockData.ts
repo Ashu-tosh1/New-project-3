@@ -243,3 +243,54 @@ export const samplePrescriptionsGrouped: PrescriptionGroup[] = [
     ],
   },
 ];
+
+
+export const appointments = [
+  { id: 1, patient: 'James Wilson', time: '09:00 AM', date: '2025-04-25', status: 'confirmed', type: 'Checkup' },
+  { id: 2, patient: 'Emma Thompson', time: '10:30 AM', date: '2025-04-25', status: 'confirmed', type: 'Consultation' },
+  { id: 3, patient: 'Robert Garcia', time: '01:15 PM', date: '2025-04-25', status: 'pending', type: 'Follow-up' },
+  { id: 4, patient: 'Sarah Johnson', time: '03:45 PM', date: '2025-04-26', status: 'confirmed', type: 'Vaccination' },
+  { id: 5, patient: 'Michael Brown', time: '11:00 AM', date: '2025-04-27', status: 'cancelled', type: 'Specialist Referral' }
+];
+
+// Type Definitions
+type AttendedPatient = {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  appointmentDate: string;
+  diagnosis: string;
+  doctorName: string;
+};
+
+// Mock Data
+export  const attendedPatients: AttendedPatient[] = [
+  {
+    id: "p001",
+    name: "Ravi Kumar",
+    age: 45,
+    gender: "Male",
+    appointmentDate: "2025-04-20",
+    diagnosis: "Hypertension",
+    doctorName: "Dr. A. Sharma",
+  },
+  {
+    id: "p002",
+    name: "Meena Das",
+    age: 30,
+    gender: "Female",
+    appointmentDate: "2025-04-21",
+    diagnosis: "Diabetes",
+    doctorName: "Dr. B. Verma",
+  },
+  {
+    id: "p003",
+    name: "Rohan Mehta",
+    age: 27,
+    gender: "Male",
+    appointmentDate: "2025-04-22",
+    diagnosis: "Migraine",
+    doctorName: "Dr. A. Sharma",
+  },
+];

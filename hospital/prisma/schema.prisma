@@ -13,11 +13,109 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
+// 
+
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      UserRole @default(PATIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  patient     Patient?
+  doctor      Doctor?
+  pharmacist  Pharmacist?
+  receptionist Receptionist?
+}
+
+enum UserRole {
   ADMIN
   DOCTOR
   PATIENT
-  LAB_ASSISTANT
+  PHARMACIST
+  RECEPTIONIST
+}
+
+// Patient information
+model Patient {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  name         String
+  age          Int
+  gender       String
+  dateOfBirth  DateTime?
+  phoneNumber  String?
+  address      String?
+  medicalHistory String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  prescriptions Prescription[]
+  medicalReports MedicalReport[]
+}
+
+// Doctor information
+model Doctor {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  name         String
+  department   String
+  experience   Int
+  location     String
+  email        String
+  bio          String?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  availability DoctorAvailability[]
+  prescriptions Prescription[]
+  medicalReports MedicalReport[]
+}
+
+// Doctor availability slots
+model DoctorAvailability {
+  id        String   @id @default(uuid())
+  doctorId  String
+  date      DateTime
+  timeSlot  String   // Store as "HH:MM" format
+  isBooked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, date, timeSlot])
+}
+
+// Appointment information
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  doctorId    String
+  date        DateTime
+  time        String   // Store as "HH:MM" or "HH:MM AM/PM" format
+  type        String   // e.g., "Checkup", "Consultation", "Follow-up"
+  status      AppointmentStatus @default(PENDING)
+  symptoms    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 }
 
 enum AppointmentStatus {
@@ -25,149 +123,298 @@ enum AppointmentStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+  IN_PROGRESS
 }
 
-enum medicineType {
-  TABLET
-  CAPSULE
-  INJECTION
-  OINTMENT
-  SUPPOSITORY
-  INHALER
-}
-
-model User {
-  id        String @id @default(cuid()) 
-  clerkId   String @unique
-  name      String
-  email     String @unique
-  password  String
-  role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  patient    Patient?
-  doctor     Doctor?
-  labAssistant LabAssistant?
-}
-
-model Patient {
-  id           String @id @default(cuid()) 
-  userId       String @unique @map("user_id")
-  user         User   @relation(fields: [userId], references: [id])
-  phone        String
-  address      String
-  city         String
-  state        String
-  zip          String
-  country      String
-  sex          String
-  dob          DateTime
-  bloodGroup   String
-  weight       Int
-  height       Int
-  bloodPressure String
-  isActive     Boolean @default(true)
-  appointments Appointment[]
-  medicines    Medicine[]
-  reports      Report[]
-  labTests     LabTest[]
-  chats        Chat[]
-  doctorPatients PatientDoctor[] // ✅ Many-to-many relation
-}
-
-model Doctor {
-  id           String @id @default(cuid())
-  userId       String @unique @map("user_id")
-  user         User   @relation(fields: [userId], references: [id])
-  department   String?
-  availableSlots Json  
-  bookedSlots  Json    
-  appointments Appointment[]
-  reports      Report[]
-  medicines    Medicine[]
-  labTests     LabTest[]
-  chats        Chat[]
-  patientDoctors PatientDoctor[] 
-}
-
-
-model PatientDoctor {
-  doctorId  String
-  patientId String
-  doctor    Doctor @relation(fields: [doctorId], references: [id])
-  patient   Patient @relation(fields: [patientId], references: [id])
-  @@id([doctorId, patientId]) // Composite Primary Key
-}
-
-
-
-model Appointment {
-  id                 String @id
-  patientId          String
-  patient            Patient @relation(fields: [patientId], references: [id])
-  doctorId           String
-  doctor            Doctor @relation(fields: [doctorId], references: [id])
-  appointmentDate    DateTime
-  appointmentTime    DateTime
-  status             AppointmentStatus @default(PENDING)
-  type               String?
-  description        String?
-  notes             String?
-  paymentStatus      String @default("PENDING")
-  createdAt         DateTime @default(now())
-}
-
-model Medicine {
-  id           String @id
-  name         String
-  price        Int
-  quantity     Int
-  description  String
-  medicineType medicineType
+// Prescription information
+model Prescription {
+  id           String   @id @default(uuid())
   patientId    String
   doctorId     String
-  doctor       Doctor @relation(fields: [doctorId], references: [id])
-  patient      Patient @relation(fields: [patientId], references: [id])
-  orderStatus  String @default("PENDING")
+  issueDate    DateTime @default(now())
+  expiryDate   DateTime?
+  status       PrescriptionStatus @default(ACTIVE)
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  patient      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor       Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  medications  PrescriptionMedication[]
 }
 
-model Report {
-  id        String @id
-  patientId String
-  patient   Patient @relation(fields: [patientId], references: [id])
-  doctorId  String
-  doctor    Doctor @relation(fields: [doctorId], references: [id])
-  details   String
-  createdAt DateTime @default(now())
+enum PrescriptionStatus {
+  ACTIVE
+  COMPLETED
+  EXPIRED
 }
 
-model LabTest {
-  id        String @id
-  patientId String
-  patient   Patient @relation(fields: [patientId], references: [id])
-  doctorId  String
-  doctor    Doctor @relation(fields: [doctorId], references: [id])
-  labAssistantId String?
-  labAssistant LabAssistant? @relation(fields: [labAssistantId], references: [id])
-  testDetails String
-  status     String @default("PENDING")
-  createdAt DateTime @default(now())
+// Prescription medications (many-to-many relationship)
+model PrescriptionMedication {
+  id              String   @id @default(uuid())
+  prescriptionId  String
+  medicineId      String
+  dosage          String
+  frequency       String
+  duration        String?
+  instructions    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  prescription    Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  medicine        Medicine     @relation(fields: [medicineId], references: [id])
 }
 
-model LabAssistant {
-  id       String @id
-  userId   String @unique
-  user     User @relation(fields: [userId], references: [id])
-  labTests LabTest[]
+// Medical Reports
+model MedicalReport {
+  id          String   @id @default(uuid())
+  patientId   String
+  doctorId    String
+  name        String
+  type        ReportType
+  fileUrl     String?
+  results     String?
+  date        DateTime @default(now())
+  status      ReportStatus @default(PROCESSING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 }
 
-model Chat {
-  id        String @id
-  doctorId  String?
-  doctor    Doctor? @relation(fields: [doctorId], references: [id])
-  patientId String?
-  patient   Patient? @relation(fields: [patientId], references: [id])
-  message   String
-  createdAt DateTime @default(now())
+enum ReportType {
+  BLOOD_TEST
+  X_RAY
+  MRI
+  CT_SCAN
+  ULTRASOUND
+  OTHER
 }
+
+enum ReportStatus {
+  PROCESSING
+  READY
+  REVIEWED
+}
+
+// Pharmacy related models
+model Medicine {
+  id                String   @id @default(uuid())
+  name              String
+  genericName       String?
+  manufacturer      String?
+  category          String?
+  description       String?
+  dosageForm        String?  // e.g., "Tablet", "Syrup", "Injection"
+  strength          String?  // e.g., "500mg", "10mg/5ml"
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  inventoryItems    InventoryItem[]
+  prescriptionItems PrescriptionMedication[]
+}
+
+model InventoryItem {
+  id            String   @id @default(uuid())
+  medicineId    String
+  batchNumber   String
+  quantity      Int
+  expiryDate    DateTime
+  purchaseDate  DateTime @default(now())
+  price         Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  medicine      Medicine @relation(fields: [medicineId], references: [id])
+}
+
+// Staff models
+model Pharmacist {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String
+  licenseNumber String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Receptionist {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+// enu m Role {
+//   ADMIN
+//   DOCTOR
+//   PATIENT
+//   LAB_ASSISTANT
+// }
+
+// enum AppointmentStatus {
+//   PENDING
+//   CONFIRMED
+//   CANCELLED
+//   COMPLETED
+// }
+
+// enum medicineType {
+//   TABLET
+//   CAPSULE
+//   INJECTION
+//   OINTMENT
+//   SUPPOSITORY
+//   INHALER
+// }
+
+// model User {
+//   id        String @id @default(cuid()) 
+//   clerkId   String @unique
+//   name      String
+//   email     String @unique
+//   password  String
+//   role      Role
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   patient    Patient?
+//   doctor     Doctor?
+//   labAssistant LabAssistant?
+// }
+
+// model Patient {
+//   id           String @id @default(cuid()) 
+//   userId       String @unique @map("user_id")
+//   user         User   @relation(fields: [userId], references: [id])
+//   phone        String
+//   address      String
+//   city         String
+//   state        String
+//   zip          String
+//   country      String
+//   sex          String
+//   dob          DateTime
+//   bloodGroup   String
+//   weight       Int
+//   height       Int
+//   bloodPressure String
+//   isActive     Boolean @default(true)
+//   appointments Appointment[]
+//   medicines    Medicine[]
+//   reports      Report[]
+//   labTests     LabTest[]
+//   chats        Chat[]
+//   doctorPatients PatientDoctor[] // ✅ Many-to-many relation
+// }
+
+// model Doctor {
+//   id           String @id @default(cuid())
+//   userId       String @unique @map("user_id")
+//   user         User   @relation(fields: [userId], references: [id])
+//   department   String?
+//   availableSlots Json  
+//   bookedSlots  Json    
+//   appointments Appointment[]
+//   reports      Report[]
+//   medicines    Medicine[]
+//   labTests     LabTest[]
+//   chats        Chat[]
+//   patientDoctors PatientDoctor[] 
+// }
+
+
+// model PatientDoctor {
+//   doctorId  String
+//   patientId String
+//   doctor    Doctor @relation(fields: [doctorId], references: [id])
+//   patient   Patient @relation(fields: [patientId], references: [id])
+//   @@id([doctorId, patientId]) // Composite Primary Key
+// }
+
+
+
+// model Appointment {
+//   id                 String @id
+//   patientId          String
+//   patient            Patient @relation(fields: [patientId], references: [id])
+//   doctorId           String
+//   doctor            Doctor @relation(fields: [doctorId], references: [id])
+//   appointmentDate    DateTime
+//   appointmentTime    DateTime
+//   status             AppointmentStatus @default(PENDING)
+//   type               String?
+//   description        String?
+//   notes             String?
+//   paymentStatus      String @default("PENDING")
+//   createdAt         DateTime @default(now())
+// }
+
+// model Medicine {
+//   id           String @id
+//   name         String
+//   price        Int
+//   quantity     Int
+//   description  String
+//   medicineType medicineType
+//   patientId    String
+//   doctorId     String
+//   doctor       Doctor @relation(fields: [doctorId], references: [id])
+//   patient      Patient @relation(fields: [patientId], references: [id])
+//   orderStatus  String @default("PENDING")
+//   createdAt    DateTime @default(now())
+// }
+
+// model Report {
+//   id        String @id
+//   patientId String
+//   patient   Patient @relation(fields: [patientId], references: [id])
+//   doctorId  String
+//   doctor    Doctor @relation(fields: [doctorId], references: [id])
+//   details   String
+//   createdAt DateTime @default(now())
+// }
+
+// model LabTest {
+//   id        String @id
+//   patientId String
+//   patient   Patient @relation(fields: [patientId], references: [id])
+//   doctorId  String
+//   doctor    Doctor @relation(fields: [doctorId], references: [id])
+//   labAssistantId String?
+//   labAssistant LabAssistant? @relation(fields: [labAssistantId], references: [id])
+//   testDetails String
+//   status     String @default("PENDING")
+//   createdAt DateTime @default(now())
+// }
+
+// model LabAssistant {
+//   id       String @id
+//   userId   String @unique
+//   user     User @relation(fields: [userId], references: [id])
+//   labTests LabTest[]
+// }
+
+// model Chat {
+//   id        String @id
+//   doctorId  String?
+//   doctor    Doctor? @relation(fields: [doctorId], references: [id])
+//   patientId String?
+//   patient   Patient? @relation(fields: [patientId], references: [id])
+//   message   String
+//   createdAt DateTime @default(now())
+// }
+
