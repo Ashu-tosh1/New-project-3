@@ -47,3 +47,7 @@ now we will be using ReactQuery to implement the api in the frontend of the logi
   <!-- Run the following to update                            │
 │    npm i --save-dev prisma@latest                       │
 │    npm i @prisma/client@latest  -->
+
+to add new prisma table
+npx prisma migrate dev --name add_appointment_requests
+

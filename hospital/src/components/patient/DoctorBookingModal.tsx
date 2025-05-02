@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { CalendarIcon, Check, Clock3, X } from 'lucide-react';
 import { Doctor } from '../mock/MockData';
-import axios from 'axios';  // Or your preferred method for API requests
+import axios from 'axios';
 
 interface Props {
   selectedDoctor: Doctor;
@@ -21,19 +22,19 @@ const formatDate = (dateStr: string) =>
   });
 
 export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
+  const { user } = useUser();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(new Date());
   const [isBookingComplete, setIsBookingComplete] = useState(false);
   const [availability, setAvailability] = useState<Record<string, string[]>>({});
 
-  // Fetch availability from the backend
-  const fetchAvailability = async (doctorId: number) => {
+  const fetchAvailability = async (doctorId: string) => {
     try {
       const response = await axios.get(`/api/doctor/${doctorId}/availability`);
       setAvailability(response.data);
     } catch (error) {
-      console.error("Error fetching doctor availability:", error);
+      console.error('Error fetching doctor availability:', error);
     }
   };
 
@@ -71,9 +72,37 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
     setSelectedTime(time);
   };
 
-  const handleBookAppointment = () => {
-    // Mock booking logic — you can replace this with an API call
-    setIsBookingComplete(true);
+  const handleBookAppointment = async () => {
+    if (!selectedDate || !selectedTime || !user) return;
+
+    try {
+      // Fetch the patientId using Clerk's userId
+      const patientResponse = await axios.post('/api/patient/getId', {
+        clerkUserId: user.id,
+      });
+
+      const { patientId } = patientResponse.data;
+      if (!patientId) {
+        console.error('Patient ID not found');
+        return;
+      }
+
+      // Book the appointment
+      const response = await axios.post('/api/appointments/request', {
+        patientId, // Use the patientId here
+        doctorId: selectedDoctor.id,
+        date: new Date(selectedDate).toISOString(),
+        time: selectedTime,
+        type: 'Consultation',
+        symptoms: '',
+      });
+
+      console.log('Appointment booked:', response.data);
+      setIsBookingComplete(true);
+    } catch (error) {
+      console.error('Failed to book appointment:', error);
+      alert('Failed to book appointment. Please try again later.');
+    }
   };
 
   const handleClose = () => {
@@ -128,7 +157,6 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
                 </button>
               </div>
 
-              {/* Doctor Info */}
               <div className="mt-4 flex gap-4">
                 <div>
                   <h4 className="font-semibold">{selectedDoctor.name}</h4>
@@ -181,33 +209,21 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
                         className={`p-2 text-center rounded cursor-pointer ${selectedTime === time ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}`}
                         onClick={() => handleTimeSelect(time)}
                       >
-                        <div className="flex justify-center items-center gap-1">
-                          <Clock3 className="h-4 w-4" />
-                          {time}
-                        </div>
+                        {time}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-2 p-4 bg-gray-50 text-center text-sm text-gray-500 rounded">
-                    <CalendarIcon className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-                    {selectedDate ? 'No time slots available for this date.' : 'Please select a date to view time slots.'}
-                  </div>
+                  <div className="text-sm text-gray-500">No availability for this date</div>
                 )}
               </div>
 
-              {/* Buttons */}
-              <div className="mt-6 flex justify-end gap-3">
+              {/* Book Button */}
+              <div className="mt-6 text-right">
                 <button
-                  onClick={handleClose}
-                  className="px-4 py-2 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
+                  className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                   onClick={handleBookAppointment}
-                  disabled={!selectedTime}
-                  className={`px-4 py-2 rounded text-white ${selectedTime ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}
+                  disabled={!selectedDate || !selectedTime}
                 >
                   Book Appointment
                 </button>
