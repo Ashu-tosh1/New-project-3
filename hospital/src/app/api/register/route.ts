@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { users } from "@clerk/clerk-sdk-node";
@@ -10,26 +11,34 @@ export async function POST(req: Request) {
 
     console.log("Received Data:", { email, username, password });
 
+    // Basic validations
     if (!email || !username || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const allClerkUsers = await users.getUserList();
-    const emailExistsInClerk = allClerkUsers.some(user => user.emailAddresses.some(e => e.emailAddress === email));
-
-    if (emailExistsInClerk) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 400 });
+    if (password.length < 8) {
+      return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
     }
 
+    // Check if email already exists in Clerk
+    const existingClerkUsers = await users.getUserList({ emailAddress: [email] });
+    if (existingClerkUsers.length > 0) {
+      return NextResponse.json({ error: "Email already registered in Clerk" }, { status: 400 });
+    }
 
+    // Check if email already exists in Prisma
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json({ error: "Email already registered in Prisma" }, { status: 400 });
     }
 
-    const uniqueUsername = `${username}_${Date.now()}`;
+    // Clean username and make unique
+    const slugifiedUsername = username.trim().replace(/\s+/g, "_").toLowerCase();
+    const uniqueUsername = `${slugifiedUsername}_${Date.now()}`;
+
+    // Create Clerk user
     const clerkUser = await users.createUser({
-      username:uniqueUsername,
+      username: uniqueUsername,
       emailAddress: [email],
       password,
     });
@@ -37,46 +46,43 @@ export async function POST(req: Request) {
     console.log("Clerk User Created:", clerkUser);
 
     if (!clerkUser.id) {
-      return NextResponse.json({ error: "Failed to register " }, { status: 400 });
+      return NextResponse.json({ error: "Failed to register user in Clerk" }, { status: 400 });
     }
 
-    // ✅ Save user in Prisma
+    // Save user in Prisma
     await prisma.user.create({
       data: {
         clerkId: clerkUser.id,
-        name: username,
         email,
-        password, // Consider hashing password before storing
         role: "PATIENT",
+        firstName: username,
         patient: {
           create: {
-            phone: "0000000000",
+            name: username,
+            age: 0,
+            gender: "Unknown",
+            dateOfBirth: new Date(),
+            phoneNumber: "0000000000",
             address: "Unknown",
-            city: "Unknown",
-            state: "Unknown",
-            zip: "000000",
-            country: "Unknown",
-            sex: "Unknown",
-            dob: new Date(),
-            bloodGroup: "Unknown",
-            weight: 0,
-            height: 0,
-            bloodPressure: "Normal",
+            medicalHistory: "None",
           },
         },
       },
     });
 
     return NextResponse.json({ message: "Patient registered successfully", clerkUser }, { status: 201 });
+
   } catch (error: unknown) {
     console.error("Registration error:", error);
-    if (error instanceof ErrorEvent) {
-      console.log(error.error)
+
+    if ((error as any)?.errors) {
+      console.error("Clerk validation errors:", (error as any).errors);
     }
-   
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
+
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

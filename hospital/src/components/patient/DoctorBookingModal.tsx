@@ -1,9 +1,9 @@
 'use client';
 
-import {  useState } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { CalendarIcon, Check, Clock3, X } from 'lucide-react';
 import { Doctor } from '../mock/MockData';
+import axios from 'axios';  // Or your preferred method for API requests
 
 interface Props {
   selectedDoctor: Doctor;
@@ -25,6 +25,23 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [weekStart, setWeekStart] = useState(new Date());
   const [isBookingComplete, setIsBookingComplete] = useState(false);
+  const [availability, setAvailability] = useState<Record<string, string[]>>({});
+
+  // Fetch availability from the backend
+  const fetchAvailability = async (doctorId: number) => {
+    try {
+      const response = await axios.get(`/api/doctor/${doctorId}/availability`);
+      setAvailability(response.data);
+    } catch (error) {
+      console.error("Error fetching doctor availability:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDoctor.id) {
+      fetchAvailability(selectedDoctor.id);
+    }
+  }, [selectedDoctor]);
 
   const getWeekDates = (startDate: Date) => {
     const dates: string[] = [];
@@ -113,13 +130,6 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
 
               {/* Doctor Info */}
               <div className="mt-4 flex gap-4">
-                <Image
-                  src={selectedDoctor.image}
-                  alt={selectedDoctor.name}
-                  width={80}
-                  height={80}
-                  className="rounded-full border object-cover"
-                />
                 <div>
                   <h4 className="font-semibold">{selectedDoctor.name}</h4>
                   <p className="text-sm text-gray-600">{selectedDoctor.department}</p>
@@ -145,15 +155,9 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
                   {weekDates.map((date) => (
                     <div
                       key={date}
-                      className={`p-2 rounded text-center text-sm cursor-pointer ${
-                        Object.keys(selectedDoctor.availability).includes(date)
-                          ? selectedDate === date
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                          : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
+                      className={`p-2 rounded text-center text-sm cursor-pointer ${availability[date] ? (selectedDate === date ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800 hover:bg-blue-200') : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                       onClick={() => {
-                        if (Object.keys(selectedDoctor.availability).includes(date)) {
+                        if (availability[date]) {
                           setSelectedDate(date);
                           setSelectedTime(null);
                         }
@@ -169,17 +173,12 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
               {/* Time Slots */}
               <div className="mt-4">
                 <h5 className="text-sm font-medium text-gray-700 mb-2">Available Time Slots</h5>
-                {selectedDate &&
-                Object.keys(selectedDoctor.availability).includes(selectedDate) ? (
+                {selectedDate && availability[selectedDate] ? (
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedDoctor.availability[selectedDate].map((time) => (
+                    {availability[selectedDate].map((time) => (
                       <div
                         key={time}
-                        className={`p-2 text-center rounded cursor-pointer ${
-                          selectedTime === time
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-blue-50 text-blue-800 hover:bg-blue-100'
-                        }`}
+                        className={`p-2 text-center rounded cursor-pointer ${selectedTime === time ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-800 hover:bg-blue-100'}`}
                         onClick={() => handleTimeSelect(time)}
                       >
                         <div className="flex justify-center items-center gap-1">
@@ -192,9 +191,7 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
                 ) : (
                   <div className="mt-2 p-4 bg-gray-50 text-center text-sm text-gray-500 rounded">
                     <CalendarIcon className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-                    {selectedDate
-                      ? 'No time slots available for this date.'
-                      : 'Please select a date to view time slots.'}
+                    {selectedDate ? 'No time slots available for this date.' : 'Please select a date to view time slots.'}
                   </div>
                 )}
               </div>
@@ -210,9 +207,7 @@ export const DoctorBookingModal = ({ selectedDoctor, onClose }: Props) => {
                 <button
                   onClick={handleBookAppointment}
                   disabled={!selectedTime}
-                  className={`px-4 py-2 rounded text-white ${
-                    selectedTime ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'
-                  }`}
+                  className={`px-4 py-2 rounded text-white ${selectedTime ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'}`}
                 >
                   Book Appointment
                 </button>

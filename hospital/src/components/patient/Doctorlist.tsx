@@ -1,64 +1,77 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
+
 import React, { useState, useEffect } from 'react';
-import { Search, Filter,ChevronDown, ChevronUp,  } from 'lucide-react';
-import { Doctor } from '@/components/mock/MockData';
-import { sampleDoctors } from '@/components/mock/MockData';
+import { Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Doctor } from '@/components/mock/MockData'; // keep this for Doctor type
 import DoctorCard from '@/components/patient/DoctorCard';
 import { DoctorBookingModal } from '@/components/patient/DoctorBookingModal';
 import PatientSidebar from '@/components/patient/PatientSidebar';
+
 interface FilterOptions {
   department: string;
   sortBy: 'name' | 'experience';
   sortOrder: 'asc' | 'desc';
 }
-// Department options
-const departments = [...new Set(sampleDoctors.map(doctor => doctor.department))];
-const AppointmentPage: React.FC = () => {
-  const [doctors,] = useState<Doctor[]>(sampleDoctors);
 
+const AppointmentPage: React.FC = () => {
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     department: '',
     sortBy: 'name',
-    sortOrder: 'asc'
+    sortOrder: 'asc',
   });
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>(sampleDoctors);
+  const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
+
+  // Fetch doctors from API on mount
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await fetch("/api/doctor"); // replace with actual endpoint
+        const data = await response.json();
+        setDoctors(data);
+        setFilteredDoctors(data);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   // Apply filters and search
   useEffect(() => {
     let result = [...doctors];
-    
+
     // Search filter
     if (searchTerm) {
-      result = result.filter(doctor => 
+      result = result.filter(doctor =>
         doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doctor.department.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     // Department filter
     if (filterOptions.department) {
       result = result.filter(doctor => doctor.department === filterOptions.department);
     }
-        
+
     // Sorting
     result.sort((a, b) => {
       let comparison = 0;
-      
       if (filterOptions.sortBy === 'name') {
-        comparison = a.name.localeCompare(b.name)
+        comparison = a.name.localeCompare(b.name);
       } else if (filterOptions.sortBy === 'experience') {
         comparison = a.experience - b.experience;
       }
-      
       return filterOptions.sortOrder === 'asc' ? comparison : -comparison;
     });
-    
+
     setFilteredDoctors(result);
-  }, [doctors, searchTerm, filterOptions]);
+  }, [searchTerm, filterOptions, doctors]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -72,15 +85,15 @@ const AppointmentPage: React.FC = () => {
     setShowFilters(prev => !prev);
   };
 
-
+  // Unique departments for dropdown
+  const departments = [...new Set(doctors.map(doctor => doctor.department))];
 
   return (
-    <div className="min-h-screen flex  bg-gray-50 pt-8 pb-12">
+    <div className="min-h-screen flex bg-gray-50 pt-8 pb-12">
       <div>
-        <h1>Appointment </h1>
-        <PatientSidebar/>
+        <PatientSidebar />
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Doctor Appointments</h1>
@@ -103,7 +116,7 @@ const AppointmentPage: React.FC = () => {
                 onChange={handleSearch}
               />
             </div>
-            
+
             {/* Filter toggle */}
             <button
               onClick={handleToggleFilters}
@@ -141,7 +154,7 @@ const AppointmentPage: React.FC = () => {
                   id="sortBy"
                   className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   value={filterOptions.sortBy}
-                  onChange={(e) => handleFilterChange('sortBy', e.target.value as any)}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                 >
                   <option value="name">Name</option>
                   <option value="experience">Experience</option>
@@ -166,20 +179,19 @@ const AppointmentPage: React.FC = () => {
         </div>
 
         {/* Doctor Cards */}
-        <DoctorCard doctors={filteredDoctors}
-        onSelectDoctor={(doctor: Doctor) => setSelectedDoctor(doctor)} />
-</div>
+        <DoctorCard
+          doctors={filteredDoctors}
+          onSelectDoctor={(doctor: Doctor) => setSelectedDoctor(doctor)}
+        />
+      </div>
+
       {/* Booking Modal */}
-
-      <div>
       {selectedDoctor && (
-  <DoctorBookingModal
-    selectedDoctor={selectedDoctor}
-    onClose={() => setSelectedDoctor(null)}
-  />
-)}
-
-    </div>
+        <DoctorBookingModal
+          selectedDoctor={selectedDoctor}
+          onClose={() => setSelectedDoctor(null)}
+        />
+      )}
     </div>
   );
 };

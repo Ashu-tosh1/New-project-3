@@ -43,13 +43,13 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctors, onSelectDoctor }) => {
           >
             <div className="p-6">
               <div className="flex items-center">
-                <Image
+                {/* <Image
                   width={80}
                   height={80}
                   src={doctor.image}
                   alt={doctor.name}
                   className="h-20 w-20 rounded-full object-cover border-2 border-blue-100"
-                />
+                /> */}
                 <div className="ml-4">
                   <h3 className="font-bold text-lg text-gray-900">{doctor.name}</h3>
                   <div className="flex items-center mt-1">

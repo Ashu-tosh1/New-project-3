@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaVenusMars, FaHeartbeat, FaWeight, FaTint } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaVenusMars, FaHeartbeat, FaTint } from "react-icons/fa";
 import Image from "next/image";
 
 const PatientProfile: React.FC = () => {
@@ -67,33 +67,33 @@ const PatientProfile: React.FC = () => {
           </button>
         </div>
 
-        {/* Right Section - Info */}
-        <div className="w-2/3 p-10 flex flex-col justify-center">
-          <h3 className="text-2xl font-semibold text-blue-900 mb-4">Contact Information</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaEnvelope className="text-blue-600 mr-3" /> {patientData.email}
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaPhone className="text-blue-600 mr-3" /> {patientData.phone || "N/A"}
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaMapMarkerAlt className="text-blue-600 mr-3" /> {patientData.address}
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaVenusMars className="text-blue-600 mr-3" /> {patientData.sex}
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaHeartbeat className="text-blue-600 mr-3" /> {patientData.bloodPressure}
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaWeight className="text-blue-600 mr-3" /> {patientData.weight} kg
-            </div>
-            <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
-              <FaTint className="text-blue-600 mr-3" /> {patientData.bloodGroup}
+
+       {/* Right Section - Info */}
+          <div className="w-2/3 p-10 flex flex-col justify-center">
+            <h3 className="text-2xl font-semibold text-blue-900 mb-4">Patient Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaEnvelope className="text-blue-600 mr-3" /> {patientData.email || "N/A"}
+              </div>
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaPhone className="text-blue-600 mr-3" /> {patientData.phoneNumber || "N/A"}
+              </div>
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaMapMarkerAlt className="text-blue-600 mr-3" /> {patientData.address || "N/A"}
+              </div>
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaVenusMars className="text-blue-600 mr-3" /> {patientData.gender}
+              </div>
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaHeartbeat className="text-blue-600 mr-3" /> Date of Birth:{" "}
+                {patientData.dateOfBirth ? new Date(patientData.dateOfBirth).toLocaleDateString() : "N/A"}
+              </div>
+              <div className="flex items-center bg-gray-100 text-gray-800 p-3 rounded-lg">
+                <FaTint className="text-blue-600 mr-3" /> Medical History: {patientData.medicalHistory || "N/A"}
+              </div>
             </div>
           </div>
-        </div>
+
       </div>
     </div>
   );

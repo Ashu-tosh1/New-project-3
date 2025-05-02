@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       await signIn.create({ identifier: formData.email, password: formData.password });
       toast.success("Login successful! Redirecting...");
-      setTimeout(() => router.push("/dashboard"), 500);
+      setTimeout(() => router.push("/"), 500);
     } catch (error) {
         toast.error("Invalid credentials. Please try again.");
         console.log(error)

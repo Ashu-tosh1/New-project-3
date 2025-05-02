@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRegister } from "@/lib/api/register";
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster, toast } from "sonner";
 import axios from "axios";
-// import Image from "next/image";
+
 
 export default function AuthPage() {
   const router = useRouter();

@@ -1,15 +1,28 @@
+// /app/api/doctors/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/prisma"; // adjust path if needed
 
 export async function GET() {
   try {
     const doctors = await prisma.doctor.findMany({
-      include: { user: true }, // Assuming doctors have a related `user` with a name
+      include: {
+        availability: {
+          where: {
+            isBooked: false,
+          },
+          orderBy: {
+            date: "asc",
+          },
+        },
+      },
     });
 
-    return NextResponse.json(doctors, { status: 200 });
+    return NextResponse.json(doctors);
   } catch (error) {
-      return NextResponse.json({ error: "Failed to fetch doctors" }, { status: 500 });
-      console.log(error)
+    console.error("Error fetching doctors:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch doctors" },
+      { status: 500 }
+    );
   }
 }
