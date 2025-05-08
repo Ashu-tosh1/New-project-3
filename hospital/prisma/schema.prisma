@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 
+// User models
 
 model User {
   id        String   @id @default(uuid())
@@ -59,6 +59,7 @@ model Patient {
   appointments Appointment[]
   prescriptions Prescription[]
   medicalReports MedicalReport[]
+  conversations Conversation[]    // Added for conversation system
 }
 
 // Doctor information
@@ -81,6 +82,7 @@ model Doctor {
   availability DoctorAvailability[]
   prescriptions Prescription[]
   medicalReports MedicalReport[]
+  conversations Conversation[]    // Added for conversation system
 }
 
 // Doctor availability slots
@@ -141,6 +143,7 @@ model Prescription {
   patient      Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor       Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   medications  PrescriptionMedication[]
+  conversationMedications MedicationPrescription[] // Added for conversation system
 }
 
 enum PrescriptionStatus {
@@ -183,6 +186,7 @@ model MedicalReport {
   // Relations
   patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  testRequest TestRequest? // Added for conversation system
 }
 
 enum ReportType {
@@ -216,6 +220,7 @@ model Medicine {
   // Relations
   inventoryItems    InventoryItem[]
   prescriptionItems PrescriptionMedication[]
+  conversationMedications MedicationPrescription[] // Added for conversation system
 }
 
 model InventoryItem {
@@ -257,6 +262,111 @@ model Receptionist {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// CONVERSATION SYSTEM MODELS
+
+// Conversation model to track doctor-patient conversations
+model Conversation {
+  id            String          @id @default(uuid())
+  patientId     String
+  doctorId      String
+  startedAt     DateTime        @default(now())
+  status        ConversationStatus @default(ACTIVE)
+  lastActivity  DateTime        @default(now())
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  patient       Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        Doctor          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  testRequests  TestRequest[]
+  medications   MedicationPrescription[]
+}
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+// Message model for individual messages in a conversation
+model Message {
+  id              String         @id @default(uuid())
+  conversationId  String
+  senderId        String         // userId of sender (can be doctor or patient)
+  senderRole      UserRole       // to easily identify if doctor or patient
+  messageType     MessageType    @default(TEXT)
+  content         String
+  attachmentUrl   String?        // For images, PDFs, etc.
+  readAt          DateTime?      // Track when message was read
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+enum MessageType {
+  TEXT
+  SYMPTOMS
+  MEDICAL_HISTORY
+  DOCTOR_NOTES
+  TEST_RESULT
+  MEDICATION
+}
+
+// Model for tracking test requests
+model TestRequest {
+  id              String         @id @default(uuid())
+  conversationId  String
+  requestedBy     String         // doctorId
+  testName        String
+  testType        ReportType
+  description     String?
+  status          TestStatus     @default(REQUESTED)
+  resultId         String?    @unique     // Link to the MedicalReport ID once uploaded @unique @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  medicalReport   MedicalReport?  @relation(fields: [resultId], references: [id])
+}
+
+enum TestStatus {
+  REQUESTED
+  PENDING
+  COMPLETED
+  REVIEWED
+}
+
+// Model for tracking medication prescriptions within conversations
+model MedicationPrescription {
+  id              String         @id @default(uuid())
+  conversationId  String
+  prescribedBy    String         // doctorId
+  prescriptionId  String?        // Optional link to formal Prescription if created
+  medicineId      String
+  dosage          String
+  frequency       String
+  duration        String?
+  instructions    String?
+  status          MedicationStatus @default(PRESCRIBED)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  medicine        Medicine       @relation(fields: [medicineId], references: [id])
+  prescription    Prescription?  @relation(fields: [prescriptionId], references: [id])
+}
+
+enum MedicationStatus {
+  PRESCRIBED
+  DISPENSED
+  TAKING
+  COMPLETED
+}
 
 
 // enu m Role {
