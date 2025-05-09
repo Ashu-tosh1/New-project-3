@@ -1,105 +1,161 @@
-import { ChevronRight, ClipboardList, FileText, FileUp } from 'lucide-react'
-import React, { useState } from 'react'
+"use client";
+import { ClipboardList, FileText, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import axios from "axios";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
+// import toast from "react-hot-toast";
 
-type Step2props={
-    nextStep :() =>void 
+type Step2Props = {
+  nextStep: () => void;
+  prevStep: () => void;
+};
+
+const Step2_Medical: React.FC<Step2Props> = ({ nextStep, prevStep }) => {
+  const params = useParams();
+  const appointmentId = params?.AppointmentId as string;
+
+  const [symptoms, setSymptoms] = useState<string[]>([]);
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleAddSymptom = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed && !symptoms.includes(trimmed)) {
+      setSymptoms([...symptoms, trimmed]);
     }
-    
-const Step2_Medical:React.FC<Step2props> =  ({nextStep}) => {
-    const [previousMedicalFile, setPreviousMedicalFile] = useState<File | null>(null);
+  };
 
-    const [patientInfo, setPatientInfo] = useState({
-        name: "John Doe",
-        age: 35,
-        symptoms: "",
-        medicalHistory: ""
+  const handleRemoveSymptom = (symptomToRemove: string) => {
+    setSymptoms(symptoms.filter((symptom) => symptom !== symptomToRemove));
+  };
+
+  const handleSubmit = async () => {
+    if (!appointmentId) {
+      toast.error("Missing appointment ID");
+      return;
+    }
+
+    if (symptoms.length === 0) {
+      toast.error("Please add at least one symptom");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await axios.post("/api/medicalDetails", {
+        appointmentId,
+        symptoms: symptoms.join(", "), // storing as comma-separated string
+        notes: notes,
+        medicalFileUrl: "", // optional: if using file uploads later
       });
-      const handlePreviousMedicalFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-          setPreviousMedicalFile(e.target.files[0]);
-        }
-    };
-    const handleSymptomsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setPatientInfo({...patientInfo, symptoms: e.target.value});
-      };
-      
-      // Handle medical history input
-      const handleMedicalHistoryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setPatientInfo({...patientInfo, medicalHistory: e.target.value});
-    };
-    
 
+      toast.success("Medical details submitted");
+      nextStep();
+    } catch (err) {
+      console.error(err);
+      toast.error("Submission failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="animate-fadeIn">
-              <div className="flex items-center mb-6">
-                <ClipboardList className="text-blue-600 mr-2" size={24} />
-                <h2 className="text-xl font-bold text-gray-800">Symptom Information</h2>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <label className="block text-gray-700 font-medium mb-2">Describe your symptoms:</label>
-                    <textarea 
-                      className="w-full p-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={patientInfo.symptoms}
-                      onChange={handleSymptomsChange}
-                      placeholder="Please provide details about your symptoms, their severity, and when they started..."
-                    />
-                  </div>
-                  
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <label className="block text-gray-700 font-medium mb-2">Past medical history:</label>
-                    <textarea 
-                      className="w-full p-3 border border-gray-300 rounded-lg h-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={patientInfo.medicalHistory}
-                      onChange={handleMedicalHistoryChange}
-                      placeholder="List any chronic conditions, previous surgeries, allergies, or medications you're currently taking..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <label className="block text-gray-700 font-medium mb-2">Upload previous medical records:</label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50 transition duration-300">
-                      <input 
-                        type="file" 
-                        id="previousMedicalFile"
-                        onChange={handlePreviousMedicalFileUpload}
-                        className="hidden"
-                      />
-                      <label htmlFor="previousMedicalFile" className="cursor-pointer">
-                        <FileUp className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
-                        <p className="text-xs text-gray-500">PDF, JPG, PNG (max. 10MB)</p>
-                      </label>
-                      {previousMedicalFile && (
-                        <div className="mt-4 p-2 bg-blue-50 rounded flex items-center">
-                          <FileText size={16} className="text-blue-600 mr-2" />
-                          <span className="text-sm text-gray-700 truncate">{previousMedicalFile.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                    <h3 className="font-medium text-indigo-800 mb-2">Important Note</h3>
-                    <p className="text-sm text-indigo-700">Please be as detailed as possible about your symptoms to help your doctor make an accurate assessment. Include when symptoms started, severity, and any factors that make them better or worse.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <button 
-                onClick={nextStep}
-                className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center disabled:bg-gray-400"
-                disabled={!patientInfo.symptoms}
+      <div className="mb-6">
+        <div className="flex items-center mb-4">
+          <ClipboardList className="text-blue-600 mr-2" size={24} />
+          <h2 className="text-xl font-bold text-gray-800">Your Symptoms</h2>
+        </div>
+
+        <div className="bg-yellow-50 p-5 rounded-lg border border-yellow-100 mb-6">
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Add your symptom</label>
+            <div className="flex">
+              <input
+                type="text"
+                id="symptom"
+                placeholder="Enter symptom..."
+                className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSymptom((e.target as HTMLInputElement).value);
+                    (e.target as HTMLInputElement).value = "";
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  const input = document.getElementById("symptom") as HTMLInputElement;
+                  handleAddSymptom(input.value);
+                  input.value = "";
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700"
               >
-                Submit and Continue <ChevronRight size={18} className="ml-1" />
+                Add
               </button>
             </div>
-  )
-}
+          </div>
 
-export default Step2_Medical
+          <div className="mb-4">
+            <p className="text-gray-700 mb-2">Current symptoms:</p>
+            {symptoms.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {symptoms.map((symptom, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-yellow-200 rounded-full px-3 py-1 flex items-center"
+                  >
+                    <span className="text-gray-700">{symptom}</span>
+                    <button
+                      onClick={() => handleRemoveSymptom(symptom)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">No symptoms added yet</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <FileText className="text-blue-600 mr-2" size={24} />
+            <h2 className="text-xl font-bold text-gray-800">Notes for the Doctor</h2>
+          </div>
+
+          <textarea
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
+            placeholder="Provide any additional information that might be helpful for your doctor..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          ></textarea>
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        <button
+          onClick={prevStep}
+          className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
+        >
+          Back
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center"
+        >
+          {loading ? "Submitting..." : "Continue"} <ChevronRight size={18} className="ml-2" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Step2_Medical;
