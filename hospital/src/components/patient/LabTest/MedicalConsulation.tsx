@@ -19,6 +19,8 @@ import {
 // Import Step components
 import Step1_Medical from "./Step1_Medical";
 import Step2_Medical from "./Step2_Medical";
+import TestReportUpload from "./Step4_Medical";
+import Step5 from "./Step5_Medical";
 
 // Define our types
 type AppointmentDetails = {
@@ -93,6 +95,7 @@ const AppointmentDetails = () => {
         }
         
         const data = await response.json();
+        console.log(data)
         setAppointment(data);
       } catch (err) {
         setError("Error fetching appointment details. Using mock data instead.");
@@ -335,140 +338,24 @@ const AppointmentDetails = () => {
   const renderStep4 = () => {
     return (
       <div>
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <Upload className="text-blue-600 mr-2" size={24} />
-            <h2 className="text-xl font-bold text-gray-800">Upload Test Results</h2>
-          </div>
-          
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 transition duration-300">
-              <input 
-                type="file" 
-                id="testReport"
-                onChange={handleTestReportUpload}
-                className="hidden"
-              />
-              <label htmlFor="testReport" className="cursor-pointer">
-                <FileUp className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-gray-600">Click to upload or drag and drop your test reports</p>
-                <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG (max. 10MB)</p>
-              </label>
-              {testReport && (
-                <div className="mt-4 p-3 bg-green-50 rounded flex items-center">
-                  <FileText size={18} className="text-green-600 mr-2" />
-                  <span className="text-sm font-medium text-gray-700">{testReport.name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {appointment.testResults && (
-            <div className="mt-6">
-              <div className="flex items-center mb-4">
-                <PieChart className="text-blue-600 mr-2" size={24} />
-                <h3 className="font-bold text-gray-800">Test Results Summary</h3>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded border border-gray-200 font-mono text-sm whitespace-pre-line">
-                {appointment.testResults}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex justify-between">
-          <button 
-            onClick={prevStep}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
-          >
-            Back
-          </button>
-          
-          <button 
-            onClick={nextStep}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center"
-          >
-            View Medications <ChevronRight size={18} className="ml-2" />
-          </button>
-        </div>
+        <TestReportUpload
+      appointment={appointment}
+      prevStep={prevStep}
+      nextStep={nextStep}
+    />
+
       </div>
     );
   };
+  
+  
 
   // Step 5: Medications
   const renderStep5 = () => {
     return (
       <div>
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <Pill className="text-blue-600 mr-2" size={24} />
-            <h2 className="text-xl font-bold text-gray-800">Prescribed Medications</h2>
-          </div>
-          
-          <div className="space-y-4">
-            {appointment.medications && appointment.medications.length > 0 ? (
-              appointment.medications.map((med, index) => (
-                <div key={index} className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-sm">
-                  <h4 className="font-bold text-lg text-gray-800">{med.name}</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                    <div>
-                      <p className="text-sm text-gray-500">Dosage</p>
-                      <p className="font-medium text-gray-700">{med.dosage}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Instructions</p>
-                      <p className="font-medium text-gray-700">{med.instructions}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="mb-3 text-gray-400">
-                  <Pill size={32} className="mx-auto" />
-                </div>
-                <p className="text-gray-600">No medications have been prescribed yet.</p>
-                <p className="text-sm text-gray-500 mt-1">The doctor will review your test results and symptoms before prescribing.</p>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Actions */}
-        <div className="flex flex-wrap gap-3 justify-between mt-6">
-          <button 
-            onClick={prevStep}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300"
-          >
-            Back
-          </button>
-          
-          <div className="flex gap-3">
-            <button 
-              onClick={() => window.history.back()}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-300 flex items-center"
-            >
-              Back to Appointments
-            </button>
-            
-            {appointment.status === "scheduled" && (
-              <button 
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-300"
-              >
-                Cancel Appointment
-              </button>
-            )}
-            
-            {appointment.medications && appointment.medications.length > 0 && (
-              <button 
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-300 flex items-center"
-              >
-                Download Prescription <FileText size={18} className="ml-2" />
-              </button>
-            )}
-          </div>
-        </div>
+       <Step5 appointmentId={appointmentId} prevStep={prevStep} />
+
       </div>
     );
   };

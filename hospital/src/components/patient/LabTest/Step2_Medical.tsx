@@ -1,10 +1,9 @@
 "use client";
 import { ClipboardList, FileText, ChevronRight } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-// import toast from "react-hot-toast";
 
 type Step2Props = {
   nextStep: () => void;
@@ -18,6 +17,30 @@ const Step2_Medical: React.FC<Step2Props> = ({ nextStep, prevStep }) => {
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // ✅ Fetch existing symptoms and notes from the database
+  useEffect(() => {
+    const fetchMedicalDetails = async () => {
+      if (!appointmentId) return;
+
+      try {
+        const response = await axios.get(`/api/medicalDetails/${appointmentId}`);
+        const data = response.data;
+
+        if (data?.symptoms) {
+          setSymptoms(data.symptoms.split(",").map((s: string) => s.trim()));
+        }
+
+        if (data?.notes) {
+          setNotes(data.notes);
+        }
+      } catch (error) {
+        console.error("Error fetching medical details:", error);
+      }
+    };
+
+    fetchMedicalDetails();
+  }, [appointmentId]);
 
   const handleAddSymptom = (value: string) => {
     const trimmed = value.trim();
@@ -45,9 +68,9 @@ const Step2_Medical: React.FC<Step2Props> = ({ nextStep, prevStep }) => {
       setLoading(true);
       await axios.post("/api/medicalDetails", {
         appointmentId,
-        symptoms: symptoms.join(", "), // storing as comma-separated string
-        notes: notes,
-        medicalFileUrl: "", // optional: if using file uploads later
+        symptoms: symptoms.join(", "), // store as comma-separated string
+        notes,
+        medicalFileUrl: "", // placeholder for future file uploads
       });
 
       toast.success("Medical details submitted");
